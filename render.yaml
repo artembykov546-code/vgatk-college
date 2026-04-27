@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: vgatk-college
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd backend && python app.py & python bot.py
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
