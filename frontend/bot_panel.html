@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление ботом - ВГАТК</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .card h2 {
+            color: #4c1d95;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #fbbf24;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-group label {
+            width: 160px;
+            font-weight: bold;
+            color: #555;
+        }
+        .form-group input, .form-group select {
+            flex: 1;
+            min-width: 250px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #4c1d95, #2563eb);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .btn-danger {
+            background: #dc2626;
+        }
+        .btn-warning {
+            background: #f59e0b;
+        }
+        .btn-success {
+            background: #10b981;
+        }
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 11px;
+        }
+        .btn-edit {
+            background: #3b82f6;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            font-size: 13px;
+        }
+        th {
+            background: #f8f9fa;
+            color: #4c1d95;
+            position: sticky;
+            top: 0;
+        }
+        .status-active { color: #10b981; font-weight: bold; }
+        .status-inactive { color: #dc2626; font-weight: bold; }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .badge-super_admin { background: #dc2626; color: white; }
+        .badge-admin { background: #4c1d95; color: white; }
+        .badge-curator { background: #3b82f6; color: white; }
+        .badge-master { background: #8b5cf6; color: white; }
+        .search-box {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .filter-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .filter-btn {
+            padding: 6px 14px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .filter-btn.active {
+            background: #4c1d95;
+            color: white;
+            border-color: #4c1d95;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #4c1d95, #2563eb);
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .stat-card .number { font-size: 1.5rem; font-weight: bold; }
+        .stat-card .label { font-size: 0.7rem; opacity: 0.9; }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: inherit;
+            resize: vertical;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .help-text {
+            background: #f0fdf4;
+            border: 1px solid #10b981;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+        .help-text code {
+            background: #e5e7eb;
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+        .edit-id-input {
+            width: 100px;
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h2>🤖 Управление Telegram ботом</h2>
+            
+            <div class="help-text">
+                💡 <strong>Как узнать свой Telegram ID?</strong><br>
+                1. Напишите боту <code>@userinfobot</code> → нажмите <strong>Старт</strong><br>
+                2. Бот пришлёт сообщение с вашим <strong>ID</strong><br>
+                3. Скопируйте число и нажмите "✏️ Сохранить" напротив сотрудника
+            </div>
+            
+            <div class="stats-grid" id="stats"></div>
+            
+            <div class="filter-buttons" id="roleFilters">
+                <button class="filter-btn active" data-role="all">📋 Все</button>
+                <button class="filter-btn" data-role="super_admin">👑 Главные админы</button>
+                <button class="filter-btn" data-role="admin">👨‍💼 Администраторы</button>
+                <button class="filter-btn" data-role="curator">👨‍🏫 Кураторы</button>
+                <button class="filter-btn" data-role="master">🔧 Мастера ПО</button>
+            </div>
+            
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 Поиск по фамилии, имени, телефону..." onkeyup="filterUsers()">
+                <button class="btn" onclick="loadAllData()">🔄 Обновить</button>
+            </div>
+            
+            <div class="table-wrapper">
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Сотрудник</th>
+                            <th>Должность</th>
+                            <th>Роль</th>
+                            <th>Telegram ID</th>
+                            <th>Username</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersList"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>📢 Отправить сообщение всем</h2>
+            <div class="form-group">
+                <label>Сообщение:</label>
+                <textarea id="broadcastMessage" rows="3" placeholder="Введите сообщение для рассылки..."></textarea>
+            </div>
+            <button class="btn btn-warning" onclick="sendBroadcast()">📢 Отправить рассылку</button>
+        </div>
+    </div>
+
+    <script>
+        let allStaff = [];
+        let boundUsers = [];
+        let currentRoleFilter = 'all';
+        
+        async function loadAllData() {
+            console.log('=== loadAllData started ===');
+            try {
+                // Загружаем всех сотрудников
+                const staffRes = await fetch('/api/staff');
+                const staffData = await staffRes.json();
+                console.log('Staff loaded:', staffData.length);
+                
+                // Загружаем привязанных пользователей
+                const boundRes = await fetch('/api/bot/users');
+                boundUsers = await boundRes.json();
+                console.log('Bound users loaded:', boundUsers.length);
+                
+                const boundMap = new Map();
+                boundUsers.forEach(u => {
+                    boundMap.set(u.staff_id, u);
+                });
+                
+                allStaff = staffData.map(s => {
+                    const bound = boundMap.get(s.id);
+                    return {
+                        ...s,
+                        is_bound: !!bound,
+                        bound_data: bound || null,
+                        bound_id: bound ? bound.id : null,
+                        telegram_id: bound ? bound.telegram_id : null,
+                        telegram_username: bound ? bound.telegram_username : null,
+                        is_active: bound ? bound.is_active : false,
+                        is_verified: bound ? bound.is_verified : false
+                    };
+                });
+                
+                
+                // Массовая загрузка ролей (один запрос)
+            const userIds = allStaff.map(s => s.id);
+            try {
+        const rolesBatchRes = await fetch('/api/users/roles/batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_ids: userIds })
+        });
+    
+    if (rolesBatchRes.ok) {
+        const rolesMap = await rolesBatchRes.json();
+        for (const s of allStaff) {
+            const roleIds = rolesMap[s.id] || [];
+            const roleId = roleIds[0];
+            if (roleId === 1) s.user_role = 'super_admin';
+            else if (roleId === 2) s.user_role = 'admin';
+            else if (roleId === 3) s.user_role = 'curator';
+            else if (roleId === 4) s.user_role = 'master';
+            else s.user_role = s.position === 'куратор' ? 'curator' : 
+                             s.position === 'мастер_по' ? 'master' : 'viewer';
+        }
+    } else {
+        // fallback: определяем по должности
+        for (const s of allStaff) {
+            s.user_role = s.position === 'куратор' ? 'curator' : 
+                         s.position === 'мастер_по' ? 'master' : 'viewer';
+        }
+    }
+} catch(e) {
+    console.error('Ошибка массовой загрузки ролей:', e);
+    // fallback: определяем по должности
+    for (const s of allStaff) {
+        s.user_role = s.position === 'куратор' ? 'curator' : 
+                     s.position === 'мастер_по' ? 'master' : 'viewer';
+    }
+}
+                
+                renderStaffList();
+                updateStats();
+                
+            } catch(e) {
+                console.error('Ошибка загрузки:', e);
+                document.getElementById('usersList').innerHTML = '<tr><td colspan="8" style="text-align:center; color:red;">❌ Ошибка загрузки данных: ' + e.message + '</td></tr>';
+            }
+        }
+        
+        function updateStats() {
+            const total = allStaff.length;
+            const bound = allStaff.filter(s => s.is_bound).length;
+            const unbound = total - bound;
+            const active = allStaff.filter(s => s.is_bound && s.is_active).length;
+            
+            document.getElementById('stats').innerHTML = `
+                <div class="stat-card"><div class="number">${total}</div><div class="label">Всего сотрудников</div></div>
+                <div class="stat-card"><div class="number">${bound}</div><div class="label">Привязано к боту</div></div>
+                <div class="stat-card"><div class="number">${unbound}</div><div class="label">Не привязано</div></div>
+                <div class="stat-card"><div class="number">${active}</div><div class="label">Активных</div></div>
+            `;
+        }
+        
+        function renderStaffList() {
+            console.log('=== renderStaffList: всех сотрудников ===');
+            allStaff.forEach(s => {
+            console.log(`ID: ${s.id}, Имя: ${s.last_name}, bound_id: ${s.bound_id}, is_bound: ${s.is_bound}, is_active: ${s.is_active}, telegram_id: ${s.telegram_id}`);
+            });
+
+            let filtered = [...allStaff];
+            
+            if (currentRoleFilter !== 'all') {
+                filtered = filtered.filter(s => s.user_role === currentRoleFilter);
+            }
+            
+            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+            if (searchTerm) {
+                filtered = filtered.filter(s => 
+                    (s.last_name || '').toLowerCase().includes(searchTerm) ||
+                    (s.first_name || '').toLowerCase().includes(searchTerm) ||
+                    (s.phone || '').includes(searchTerm)
+                );
+            }
+            
+            const tbody = document.getElementById('usersList');
+            if (!filtered.length) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center">Нет сотрудников</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            filtered.forEach(s => {
+                const roleName = getRoleName(s.user_role);
+                const roleClass = getRoleClass(s.user_role);
+                const statusClass = s.is_bound ? (s.is_active ? 'status-active' : 'status-inactive') : 'status-inactive';
+                const statusText = s.is_bound ? (s.is_active ? '✅ Активен' : '🔒 Заблокирован') : '❌ Не привязан';
+                
+                const currentTelegramId = s.telegram_id || '';
+                const currentTelegramUsername = s.telegram_username || '';
+                
+                html += `<tr>
+                    <td>${s.id}</td>
+                    <td><strong>${s.last_name || ''} ${s.first_name || ''}</strong><br><small style="font-size:10px">${s.phone || '-'}</small></td>
+                    <td>${s.position || '—'}</td>
+                    <td><span class="badge ${roleClass}">${roleName}</span></td>
+                    <td><input type="number" id="tg_id_${s.id}" class="edit-id-input" value="${currentTelegramId}" placeholder="ID" style="width:100px"></td>
+                    <td><input type="text" id="tg_username_${s.id}" class="edit-id-input" value="${currentTelegramUsername}" placeholder="@username" style="width:100px"></td>
+                    <td class="${statusClass}">${statusText}</td>
+                    <td>
+                        <button class="btn btn-edit btn-sm" onclick="updateTelegramId(${s.id}, ${s.is_bound})">✏️ Сохранить</button>
+                        ${s.is_bound ? 
+                            `<button class="btn btn-sm" onclick="toggleUser(${s.bound_id}, ${!s.is_active})">${s.is_active ? '🔒 Блок' : '🔓 Разблок'}</button>
+                             <button class="btn btn-danger btn-sm" onclick="unbindUser(${s.bound_id})">🗑️ Отвязать</button>` :
+                            `<button class="btn btn-success btn-sm" onclick="quickBind(${s.id}, '${s.last_name} ${s.first_name}')">🔗 Привязать</button>`
+                        }
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+        
+        async function updateTelegramId(staffId, isBound) {
+            const newTelegramId = document.getElementById(`tg_id_${staffId}`).value;
+            const newTelegramUsername = document.getElementById(`tg_username_${staffId}`).value;
+            
+            if (!newTelegramId) {
+                alert('Введите Telegram ID');
+                return;
+            }
+            
+            if (isBound) {
+                const boundUser = allStaff.find(s => s.id === staffId)?.bound_data;
+                if (boundUser) {
+                    const res = await fetch(`/api/bot/update/${boundUser.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ telegram_id: newTelegramId, telegram_username: newTelegramUsername })
+                    });
+                    if (res.ok) {
+                        alert('✅ Telegram ID обновлён!');
+                        loadAllData();
+                    } else {
+                        alert('❌ Ошибка обновления');
+                    }
+                }
+            } else {
+                const res = await fetch('/api/bot/bind', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ staff_id: staffId, telegram_id: newTelegramId, telegram_username: newTelegramUsername })
+                });
+                if (res.ok) {
+                    alert('✅ Сотрудник привязан!');
+                    loadAllData();
+                } else {
+                    const err = await res.json();
+                    alert('❌ Ошибка: ' + (err.error || 'Неизвестная ошибка'));
+                }
+            }
+        }
+        
+        function getRoleName(role) {
+            const roles = {
+                'super_admin': '👑 Главный админ',
+                'admin': '👨‍💼 Администратор',
+                'curator': '👨‍🏫 Куратор',
+                'master': '🔧 Мастер ПО',
+                'viewer': '👁️ Просмотр'
+            };
+            return roles[role] || '👁️ Просмотр';
+        }
+        
+        function getRoleClass(role) {
+            const classes = {
+                'super_admin': 'badge-super_admin',
+                'admin': 'badge-admin',
+                'curator': 'badge-curator',
+                'master': 'badge-master',
+                'viewer': 'badge-admin'
+            };
+            return classes[role] || 'badge-admin';
+        }
+        
+        function quickBind(staffId, staffName) {
+            const telegramId = prompt(`Введите Telegram ID для сотрудника ${staffName}:`);
+            if (!telegramId) return;
+            const telegramUsername = prompt(`Введите Telegram username (необязательно):`, '');
+            
+            fetch('/api/bot/bind', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ staff_id: staffId, telegram_id: telegramId, telegram_username: telegramUsername || '' })
+            }).then(res => res.json()).then(data => {
+                if (data.success) {
+                    alert('✅ Сотрудник привязан!');
+                    loadAllData();
+                } else {
+                    alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                }
+            }).catch(err => alert('Ошибка: ' + err));
+        }
+        
+        function filterUsers() {
+            renderStaffList();
+        }
+        
+        async function toggleUser(userId, activate) {
+    console.log('=== toggleUser called ===');
+    console.log('userId:', userId, 'activate:', activate);
+    
+    if (!userId || userId === 'null' || userId === 'undefined') {
+        alert('❌ Ошибка: ID пользователя не найден');
+        return;
+    }
+    
+    const action = activate ? 'разблокировать' : 'заблокировать';
+    if (!confirm(`Вы уверены, что хотите ${action} пользователя?`)) return;
+    
+    try {
+        const res = await fetch(`/api/bot/toggle/${userId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ is_active: activate })
+        });
+        
+        const result = await res.json();
+        
+        if (res.ok) {
+            alert(`✅ Пользователь ${activate ? 'разблокирован' : 'заблокирован'}`);
+            loadAllData();
+        } else {
+            alert('❌ Ошибка: ' + (result.error || 'Неизвестная ошибка'));
+        }
+    } catch(e) {
+        console.error('Ошибка:', e);
+        alert('❌ Ошибка: ' + e.message);
+    }
+}
+
+async function unbindUser(userId) {
+    console.log('=== unbindUser called ===');
+    console.log('userId:', userId);
+    
+    if (!userId || userId === 'null' || userId === 'undefined') {
+        alert('❌ Ошибка: ID пользователя не найден');
+        return;
+    }
+    
+    if (!confirm('Отвязать сотрудника от Telegram? Он потеряет доступ к боту.')) return;
+    
+    try {
+        const res = await fetch(`/api/bot/unbind/${userId}`, { method: 'DELETE' });
+        
+        const result = await res.json();
+        
+        if (res.ok) {
+            alert('✅ Сотрудник отвязан');
+            loadAllData();
+        } else {
+            alert('❌ Ошибка: ' + (result.error || 'Неизвестная ошибка'));
+        }
+    } catch(e) {
+        console.error('Ошибка:', e);
+        alert('❌ Ошибка: ' + e.message);
+    }
+}
+
+async function unbindUser(userId) {
+    console.log('=== unbindUser called ===');
+    console.log('userId:', userId);
+    
+    if (!userId || userId === 'null' || userId === 'undefined') {
+        alert('❌ Ошибка: ID пользователя не найден');
+        return;
+    }
+    
+    if (!confirm('Отвязать сотрудника от Telegram? Он потеряет доступ к боту.')) return;
+    
+    try {
+        const res = await fetch(`/api/bot/unbind/${userId}`, { method: 'DELETE' });
+        
+        let result = {};
+        try {
+            result = await res.json();
+        } catch(e) {
+            console.log('Ответ не JSON, но статус:', res.status);
+            result = { success: res.ok };
+        }
+        
+        if (res.ok) {
+            alert('✅ Сотрудник отвязан');
+            loadAllData();
+        } else {
+            alert('❌ Ошибка: ' + (result.error || 'Неизвестная ошибка'));
+        }
+    } catch(e) {
+        console.error('Ошибка:', e);
+        alert('❌ Ошибка: ' + e.message);
+    }
+    }
+        
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentRoleFilter = btn.dataset.role;
+                renderStaffList();
+            });
+        });
+        
+        function loadBotPanel() {
+            console.log('Панель управления ботом загружена');
+        }
+        
+        loadAllData();
+    </script>
+</body>
+</html>

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки сайта - ВГАТК</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .settings-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .settings-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .settings-card h2 {
+            color: #4c1d95;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #fbbf24;
+        }
+
+        .settings-card h3 {
+            color: #333;
+            margin: 20px 0 15px 0;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group label {
+            width: 180px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            flex: 1;
+            min-width: 250px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .form-group input[type="color"] {
+            width: 60px;
+            height: 40px;
+            cursor: pointer;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #4c1d95, #2563eb);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .btn-save:hover {
+            opacity: 0.9;
+        }
+
+        .btn-reset {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+            margin-left: 10px;
+        }
+
+        .success-message {
+            background: #10b981;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .error-message {
+            background: #ef4444;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .col {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        hr {
+            margin: 20px 0;
+            border: none;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <div id="successMsg" class="success-message">✅ Настройки сохранены</div>
+        <div id="errorMsg" class="error-message">❌ Ошибка сохранения</div>
+
+        <!-- ==================== ОСНОВНЫЕ НАСТРОЙКИ ==================== -->
+        <div class="settings-card">
+            <h2>🏫 Основные настройки</h2>
+            <div id="siteSettings"></div>
+        </div>
+
+        <!-- ==================== КОНТАКТЫ ==================== -->
+        <div class="settings-card">
+            <h2>📞 Контактная информация</h2>
+            <div id="contactSettings"></div>
+        </div>
+
+        <!-- ==================== ДИЗАЙН ==================== -->
+        <div class="settings-card">
+            <h2>🎨 Дизайн сайта</h2>
+            
+            <h3>Цветовая схема</h3>
+            <div id="designColors"></div>
+            
+            <h3>Шрифты</h3>
+            <div id="designFonts"></div>
+            
+            <h3>Фон</h3>
+            <div id="designBackground"></div>
+            
+            <button class="btn-save" onclick="saveAllSettings()">💾 Сохранить все настройки</button>
+            <button class="btn-reset" onclick="resetDesign()">↩️ Сбросить дизайн</button>
+        </div>
+    </div>
+
+    <script>
+        // Загрузить все настройки
+        async function loadSettings() {
+            try {
+                const res = await fetch('/api/settings/all');
+                const data = await res.json();
+                
+                renderSiteSettings(data.site_settings);
+                renderContactSettings(data.contact_info);
+                renderDesignSettings(data.design_settings);
+            } catch(e) {
+                console.error('Ошибка загрузки:', e);
+            }
+        }
+
+        // Основные настройки
+        function renderSiteSettings(settings) {
+            const container = document.getElementById('siteSettings');
+            const labels = {
+                'college_name': '🏛️ Полное название колледжа',
+                'college_short_name': '📝 Краткое название',
+                'homepage_title': '📌 Заголовок главной страницы',
+                'homepage_welcome_text': '💬 Приветственный текст'
+            };
+            
+            let html = '';
+            for (const s of settings) {
+                const label = labels[s.setting_key] || s.setting_key;
+                if (s.setting_type === 'textarea') {
+                    html += `<div class="form-group">
+                        <label>${label}:</label>
+                        <textarea id="site_${s.setting_key}" data-key="${s.setting_key}" data-table="site_settings">${s.setting_value || ''}</textarea>
+                    </div>`;
+                } else {
+                    html += `<div class="form-group">
+                        <label>${label}:</label>
+                        <input type="text" id="site_${s.setting_key}" data-key="${s.setting_key}" data-table="site_settings" value="${(s.setting_value || '').replace(/"/g, '&quot;')}">
+                    </div>`;
+                }
+            }
+            container.innerHTML = html;
+            
+            // Добавляем обработчики для автосохранения
+            document.querySelectorAll('#siteSettings input, #siteSettings textarea').forEach(el => {
+                el.addEventListener('change', () => saveSetting(el.dataset.table, el.dataset.key, el.value));
+            });
+        }
+
+        // Контакты
+        function renderContactSettings(contacts) {
+            const container = document.getElementById('contactSettings');
+            const labels = {
+                'phone': '📞 Телефон',
+                'email': '✉️ Email',
+                'address': '📍 Адрес',
+                'schedule': '🕒 График работы'
+            };
+            
+            let html = '';
+            for (const c of contacts) {
+                const label = labels[c.contact_type] || c.contact_type;
+                html += `<div class="form-group">
+                    <label>${label}:</label>
+                    <input type="text" id="contact_${c.contact_type}" data-key="${c.contact_type}" data-table="contact_info" value="${(c.contact_value || '').replace(/"/g, '&quot;')}">
+                </div>`;
+            }
+            container.innerHTML = html;
+            
+            document.querySelectorAll('#contactSettings input').forEach(el => {
+                el.addEventListener('change', () => saveSetting(el.dataset.table, el.dataset.key, el.value));
+            });
+        }
+
+        // Настройки дизайна
+        function renderDesignSettings(settings) {
+            const settingsMap = {};
+            settings.forEach(s => { settingsMap[s.setting_key] = s.setting_value; });
+            
+            // Цвета
+            const colorsContainer = document.getElementById('designColors');
+            const colors = ['primary_color', 'secondary_color', 'accent_color', 'text_color', 'header_bg'];
+            const colorLabels = {
+                'primary_color': 'Основной цвет',
+                'secondary_color': 'Вторичный цвет',
+                'accent_color': 'Акцентный цвет',
+                'text_color': 'Цвет текста',
+                'header_bg': 'Цвет шапки'
+            };
+            
+            let colorsHtml = '<div class="row">';
+            for (const color of colors) {
+                colorsHtml += `<div class="col">
+                    <div class="form-group">
+                        <label>${colorLabels[color]}:</label>
+                        <input type="color" id="design_${color}" data-key="${color}" data-table="design_settings" value="${settingsMap[color] || '#4c1d95'}">
+                        <input type="text" style="width:100px" placeholder="HEX код" value="${settingsMap[color] || '#4c1d95'}" onchange="document.getElementById('design_${color}').value=this.value; saveSetting('design_settings', '${color}', this.value)">
+                    </div>
+                </div>`;
+            }
+            colorsHtml += '</div>';
+            colorsContainer.innerHTML = colorsHtml;
+            
+            // Шрифты (если есть)
+            const fontsContainer = document.getElementById('designFonts');
+            const fonts = ['font_family_title', 'font_family_groups', 'font_family_students', 'font_family_menu'];
+            const fontLabels = {
+                'font_family_title': 'Шрифт заголовка',
+                'font_family_groups': 'Шрифт названий групп',
+                'font_family_students': 'Шрифт ФИО студентов',
+                'font_family_menu': 'Шрифт меню'
+            };
+            
+            let fontsHtml = '<div class="row">';
+            for (const font of fonts) {
+                fontsHtml += `<div class="col">
+                    <div class="form-group">
+                        <label>${fontLabels[font]}:</label>
+                        <select id="design_${font}" data-key="${font}" data-table="design_settings" onchange="saveSetting('design_settings', this.dataset.key, this.value)">
+                            <option value="Segoe UI, Tahoma, Geneva, Verdana, sans-serif" ${settingsMap[font]?.includes('Segoe') ? 'selected' : ''}>Segoe UI</option>
+                            <option value="Times New Roman, serif" ${settingsMap[font]?.includes('Times') ? 'selected' : ''}>Times New Roman</option>
+                            <option value="Arial, sans-serif" ${settingsMap[font]?.includes('Arial') ? 'selected' : ''}>Arial</option>
+                            <option value="Georgia, serif" ${settingsMap[font]?.includes('Georgia') ? 'selected' : ''}>Georgia</option>
+                            <option value="Courier New, monospace" ${settingsMap[font]?.includes('Courier') ? 'selected' : ''}>Courier New</option>
+                        </select>
+                    </div>
+                </div>`;
+            }
+            fontsHtml += '</div>';
+            fontsContainer.innerHTML = fontsHtml;
+            
+            // Фон
+            const bgContainer = document.getElementById('designBackground');
+            const bgType = settingsMap['background_type'] || 'gradient';
+            const bgGradientStart = settingsMap['background_gradient_start'] || '#1a0b2e';
+            const bgGradientEnd = settingsMap['background_gradient_end'] || '#fbbf24';
+            const bgColor = settingsMap['background_color'] || '#f0f2f5';
+            const bgImage = settingsMap['background_image'] || '';
+            
+            let bgHtml = `
+                <div class="form-group">
+                    <label>Тип фона:</label>
+                    <select id="design_background_type" data-key="background_type" data-table="design_settings" onchange="toggleBackgroundType(); saveSetting('design_settings', 'background_type', this.value)">
+                        <option value="gradient" ${bgType === 'gradient' ? 'selected' : ''}>Градиент</option>
+                        <option value="color" ${bgType === 'color' ? 'selected' : ''}>Заливка цветом</option>
+                        <option value="image" ${bgType === 'image' ? 'selected' : ''}>Изображение</option>
+                    </select>
+                </div>
+                <div id="bgGradientDiv" style="display: ${bgType === 'gradient' ? 'block' : 'none'}">
+                    <div class="form-group">
+                        <label>Начальный цвет:</label>
+                        <input type="color" id="design_background_gradient_start" data-key="background_gradient_start" data-table="design_settings" value="${bgGradientStart}" onchange="saveSetting('design_settings', 'background_gradient_start', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>Конечный цвет:</label>
+                        <input type="color" id="design_background_gradient_end" data-key="background_gradient_end" data-table="design_settings" value="${bgGradientEnd}" onchange="saveSetting('design_settings', 'background_gradient_end', this.value)">
+                    </div>
+                </div>
+                <div id="bgColorDiv" style="display: ${bgType === 'color' ? 'block' : 'none'}">
+                    <div class="form-group">
+                        <label>Цвет:</label>
+                        <input type="color" id="design_background_color" data-key="background_color" data-table="design_settings" value="${bgColor}" onchange="saveSetting('design_settings', 'background_color', this.value)">
+                    </div>
+                </div>
+                <div id="bgImageDiv" style="display: ${bgType === 'image' ? 'block' : 'none'}">
+                    <div class="form-group">
+                        <label>URL изображения:</label>
+                        <input type="text" id="design_background_image" data-key="background_image" data-table="design_settings" value="${bgImage}" placeholder="https://example.com/bg.jpg" onchange="saveSetting('design_settings', 'background_image', this.value)">
+                    </div>
+                </div>
+            `;
+            bgContainer.innerHTML = bgHtml;
+        }
+
+        function toggleBackgroundType() {
+            const type = document.getElementById('design_background_type').value;
+            document.getElementById('bgGradientDiv').style.display = type === 'gradient' ? 'block' : 'none';
+            document.getElementById('bgColorDiv').style.display = type === 'color' ? 'block' : 'none';
+            document.getElementById('bgImageDiv').style.display = type === 'image' ? 'block' : 'none';
+        }
+
+        // Сохранить одну настройку
+        async function saveSetting(table, key, value) {
+            try {
+                const res = await fetch('/api/settings/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ table, key, value })
+                });
+                if (res.ok) {
+                    showSuccess();
+                    applyThemeToPage();
+                } else {
+                    showError();
+                }
+            } catch(e) {
+                showError();
+            }
+        }
+
+        // Сохранить все настройки
+        async function saveAllSettings() {
+            const allInputs = document.querySelectorAll('input[data-table], textarea[data-table], select[data-table]');
+            for (const el of allInputs) {
+                await saveSetting(el.dataset.table, el.dataset.key, el.value);
+            }
+            showSuccess();
+        }
+
+        // Сбросить дизайн
+        async function resetDesign() {
+            if (!confirm('Сбросить все настройки дизайна?')) return;
+            const res = await fetch('/api/design-settings/reset', { method: 'POST' });
+            if (res.ok) {
+                loadSettings();
+                showSuccess();
+            }
+        }
+
+        // Применить тему на страницу
+        function applyThemeToPage() {
+            fetch('/api/design-settings')
+                .then(res => res.json())
+                .then(settings => {
+                    const style = document.getElementById('dynamic-theme-style');
+                    if (!style) {
+                        const newStyle = document.createElement('style');
+                        newStyle.id = 'dynamic-theme-style';
+                        document.head.appendChild(newStyle);
+                    }
+                    const dynamicStyle = document.getElementById('dynamic-theme-style');
+                    dynamicStyle.textContent = `
+                        body {
+                            background: ${settings.background_type === 'gradient' ? 
+                                `linear-gradient(135deg, ${settings.background_gradient_start || '#1a0b2e'}, ${settings.background_gradient_end || '#fbbf24'})` :
+                                settings.background_type === 'color' ? settings.background_color || '#f0f2f5' :
+                                settings.background_image ? `url('${settings.background_image}') center/cover` : '#f0f2f5'};
+                            font-family: ${settings.font_family_menu || 'Segoe UI'};
+                        }
+                        .settings-card h2 {
+                            color: ${settings.primary_color || '#4c1d95'};
+                            border-bottom-color: ${settings.accent_color || '#fbbf24'};
+                        }
+                        .btn-save {
+                            background: linear-gradient(135deg, ${settings.primary_color || '#4c1d95'}, ${settings.secondary_color || '#2563eb'});
+                        }
+                    `;
+                });
+        }
+
+        function showSuccess() {
+            const msg = document.getElementById('successMsg');
+            msg.style.display = 'block';
+            setTimeout(() => { msg.style.display = 'none'; }, 2000);
+        }
+
+        function showError() {
+            const msg = document.getElementById('errorMsg');
+            msg.style.display = 'block';
+            setTimeout(() => { msg.style.display = 'none'; }, 2000);
+        }
+
+        // Загрузка страницы
+        loadSettings();
+    </script>
+</body>
+</html>

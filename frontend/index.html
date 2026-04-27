@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Вход - Колледж</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Montserrat', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a0b2e 0%, #2d1b69 25%, #1e3a8a 50%, #06b6d4 75%, #fbbf24 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px 35px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .logo-large {
+            width: 220px;
+            height: 220px;
+            object-fit: cover;
+            margin: 0 auto 20px;
+            display: block;
+            border-radius: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            background: white;
+            padding: 12px;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            color: #4c1d95;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .college-name {
+            font-size: 1rem;
+            color: #2563eb;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #fbbf24;
+            padding-bottom: 15px;
+            font-weight: 500;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #4c1d95, #2563eb);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .error-message {
+            color: #dc2626;
+            font-size: 0.85rem;
+            margin-top: 15px;
+            padding: 10px;
+            background: #fee2e2;
+            border-radius: 12px;
+            display: none;
+        }
+
+        @media (max-width: 550px) {
+            .login-container {
+                padding: 30px 20px;
+            }
+            h1 {
+                font-size: 1.3rem;
+            }
+            .logo-large {
+                width: 160px;
+                height: 160px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <img src="/css/logo.png" alt="Логотип колледжа" class="logo-large" onerror="this.style.display='none'">
+        
+        <h1>Учреждение образования</h1>
+        <div class="college-name">"Витебский государственный аграрно-технический колледж"</div>
+
+        <button id="loginBtn">🔓 Войти как администратор</button>
+
+        <div id="errorMessage" class="error-message"></div>
+    </div>
+
+    <script>
+        const loginBtn = document.getElementById('loginBtn');
+        const errorDiv = document.getElementById('errorMessage');
+
+        loginBtn.addEventListener('click', () => {
+            // Сохраняем данные пользователя
+            localStorage.setItem('user', JSON.stringify({
+                name: 'Главный администратор',
+                role: 'главный_админ'
+            }));
+            
+            // Перенаправляем на панель управления
+            window.location.href = '/dashboard.html';
+        });
+    </script>
+</body>
+</html>
